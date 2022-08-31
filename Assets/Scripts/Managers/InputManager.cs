@@ -42,9 +42,11 @@ namespace Deblockle.Managers
             
             if(mouseButtonDown.Value != Input.GetMouseButtonDown(0)) 
                 mouseButtonDown.Value = Input.GetMouseButtonDown(0);
-            
-            if(mousePosition.Value != new Vector2(Input.mousePosition.x, Input.mousePosition.y)) 
+
+            if (mousePosition.Value != new Vector2(Input.mousePosition.x, Input.mousePosition.y))
+            {
                 mousePosition.Value = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            }
             
             if (mouseButton.Value)
             {

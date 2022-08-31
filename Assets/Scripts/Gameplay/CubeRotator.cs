@@ -1,11 +1,16 @@
+using System;
+using Deblockle.Actions;
+using Managers;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Deblockle.Gameplay
 {
     public class CubeRotator : MonoBehaviour
     {
         [SerializeField] private Transform cube;
+        public event Action OnRotationEnd;
 
         public float Progress
         {
@@ -116,6 +121,12 @@ namespace Deblockle.Gameplay
             cube.eulerAngles = startRot;
             cube.Rotate(rotateDir * 90, Space.World);
 
+            JSBackend.I.ApplyMove(
+                Mathf.Abs((int)startPos.x+4), 
+                Mathf.Abs((int)startPos.z-4), 
+                Mathf.Abs((int)endPos.x+4), 
+                Mathf.Abs((int)endPos.z-4));
+            
             startPos = Vector3.zero;
             startRot = Vector3.zero;
             middlePos = Vector3.zero;
@@ -125,6 +136,18 @@ namespace Deblockle.Gameplay
             rotateDir = Vector3.zero;
             isPosSet = false;
             Progress = 0;
+
+            OnRotationEnd?.Invoke();
+
+            // TODO: Refactor temporary code
+            if (Random.Range(0, 2) == 1)
+            {
+                new DiagonalMoveAction().Process(transform.position, transform);
+            }
+            else
+            {
+                new SideMoveAction().Process(transform.position, transform);
+            }
         }
     }
 }

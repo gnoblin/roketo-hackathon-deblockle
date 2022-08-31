@@ -1,8 +1,8 @@
-﻿using System;
-using Deblockle.Gameplay;
+﻿using Deblockle.Gameplay;
 using Deblockle.Managers;
 using FawesomeLab.UIBuilder.Core;
 using FawesomeLab.UIBuilder.Core.UIElements;
+using Managers;
 using UnityEngine;
 
 namespace Deblockle.UI
@@ -11,7 +11,7 @@ namespace Deblockle.UI
     {
         private CubeRotator currentCube;
         private SwipeDirection currentDirection;
-        
+
         private void Start()
         {
             var input = UIManager.I.GetWindow<InputScreen>();
@@ -27,6 +27,11 @@ namespace Deblockle.UI
 
         private void Update()
         {
+            if (GameProvider.I.CurrentPlayer != GamePlayerEnum.Player)
+            {
+                return;
+            }
+         
             if (InputManager.I.mouseButton.Value == false)
             {
                 return;
@@ -60,6 +65,8 @@ namespace Deblockle.UI
             {
                 return;
             }
+            
+            
             
             InputManager.I.StopSwipe();
             currentDirection = SwipeDirection.Unknown;
