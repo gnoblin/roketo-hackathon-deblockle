@@ -1,6 +1,7 @@
 # roketo-hackathon-deblockle
 
-Unity3d webgl client for Deblockle game.
+Unity3d webgl client for Deblockle game 
+(based on awesome https://github.com/uz0/lab2-vdikan-near-deblockle smart-contracts)
 
 Video (showing the fresh version of the gameplay): 
 https://user-images.githubusercontent.com/639995/188195681-000b0e63-94b3-4222-aa54-0778eac70a67.mp4
