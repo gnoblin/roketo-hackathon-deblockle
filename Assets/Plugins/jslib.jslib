@@ -10,9 +10,24 @@
         CallGetPlayers(); 
     },
     
+    callMakeMove : function(fromX, fromY, toX, toY)
+    {
+        CallMakeMove(fromX, fromY, toX, toY);
+    },
+    
+    callGetAcc : function()
+    {
+        CallGetAcc();
+    },
+    
     callDepositWNear : function() 
     { 
         CallDepositWNear(); 
+    },
+    
+    callGetInfo : function()
+    {
+        CallGetInfo();
     },
     
     callPassMove : function() 

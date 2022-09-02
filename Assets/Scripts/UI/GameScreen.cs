@@ -36,6 +36,16 @@ namespace Deblockle.UI
             {
                 return;
             }
+
+            if (GameProvider.I.GameState == GameStateEnum.Hop)
+            {
+                return;
+            }
+
+            if (GameProvider.I.CurrentPlayer == GamePlayerEnum.Enemy)
+            {
+                return;
+            }
             
             // Debug.Log($"Swipe {InputManager.I.CurrentSwipe.Direction} {InputManager.I.CurrentSwipe.Length}");
             var swipe = InputManager.I.CurrentSwipe;
@@ -65,8 +75,6 @@ namespace Deblockle.UI
             {
                 return;
             }
-            
-            
             
             InputManager.I.StopSwipe();
             currentDirection = SwipeDirection.Unknown;

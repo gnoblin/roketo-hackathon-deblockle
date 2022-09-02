@@ -106,11 +106,10 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
-        }).then((unityInstance) => {
-          isSignIn().then((isSigned)=>{if(!isSigned){
-            requestSignIn();
-          }});
+        }).then(async (unityInstance) => {
           window.unityInst = unityInstance;
+          await connectToNear();
+          setTimeout(()=>{CalculateWhatShallWeDo()},2000);
           loadingBar.style.display = "none";
           fullscreenButton.onclick = () => {
             unityInstance.SetFullscreen(1);
@@ -127,35 +126,74 @@
 
         const backendObject = 'JS Backend'
 
+        async function CalculateWhatShallWeDo() {
+          //console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+          isSignIn().then((isSigned)=>{if(!isSigned){
+            requestSignIn();
+          }});
+          setPlayerAccount();
+          const players = await getPlayer();
+          let firstPlayerAcc;
+          let secondPlayerAcc;
+          try {
+          firstPlayerAcc = players.first_player.account || "";
+          secondPlayerAcc = players.second_player.account || "";
+          }
+          catch (e)
+          {
 
+          }
+          console.log(firstPlayerAcc);
+          console.log(secondPlayerAcc);
+          if(walletConnection.getAccountId() != firstPlayerAcc && walletConnection.getAccountId() != secondPlayerAcc)
+          {
+            console.log("1");
+            if(await isEnoughWNearForGame())
+            {
+              console.log("2");
+              showStreamButton();
+            }
+            else {
+              console.log("3");
+              showDepositButton();
+            }
+          }          
+          else {
+            console.log("4");
+            periodically(getInfo, 5000);
+          }
+          
+          
+        }
         async function CallGetAcc() {
             var account = await walletConnection.account().accountId;
             console.log(account);
-            window.unityInst.SendMessage(backendObject,'SetPlayerAccount', account);
-            SendCallback("CallGetAcc")
+            window.unityInst.SendMessage(backendObject,'ReceiveWallet', account) 
         }
 
         async function StartStream(){
           const stream = await startStream();
-          SendCallback("StartStream")
         }
 
         async function CallGetPlayers() {
             const players = await getPlayer();
             const playersArray = [players.first_player, players.second_player];
             console.log(playersArray);
-            SendCallback("CallGetPlayers")
+            window.unityInst.SendMessage(backendObject,'ReceivePlayers', playersArray) 
+        }
+
+        async function CallGetInfo() {
+            const data = await getInfo()
+            console.log(data);
         }
 
         async function CallDepositWNear() {
             const balance = await depositWNear();
             console.log(balance);
-            SendCallback("CallDepositWNear")
         }
 
         async function CallMakeMove(fromX, fromY, toX, toY) {
           const move = await makeMove(fromX, fromY, toX, toY);
-          SendCallback("CallMakeMove")
         }
 
         async function SendCallback(callbackMessage){

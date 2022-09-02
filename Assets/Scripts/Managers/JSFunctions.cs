@@ -10,16 +10,27 @@ namespace Managers
         public JSCallbackWrapper<TCallbackIn, TCallbackOut> Callback => callback;
 
         public delegate void JsCommandDelegate<in T>(T obj);
-        public delegate void CallbackAwaiterDelegate(string obj);
         
-        private readonly JSCallbackWrapper<TCallbackIn, TCallbackOut> callback;
-        private readonly JsCommandDelegate<TIn> command;
+        private JSCallbackWrapper<TCallbackIn, TCallbackOut> callback;
+        private JsCommandDelegate<TIn> command;
+        private readonly string key;
         private bool isFinished;
 
-        public JSCommand(JsCommandDelegate<TIn> jsCommandDelegate, JSCallbackWrapper<TCallbackIn, TCallbackOut> callback)
+        public JSCommand(string key)
+        {
+            this.key = key;
+        }
+
+        public JSCommand<TIn, TCallbackIn, TCallbackOut> AddCommandDelegate(JsCommandDelegate<TIn> jsCommandDelegate)
         {
             command = jsCommandDelegate;
+            return this;
+        }
+
+        public JSCommand<TIn, TCallbackIn, TCallbackOut> AddCallback(JSCallbackWrapper<TCallbackIn, TCallbackOut> callback)
+        {
             this.callback = callback;
+            return this;
         }
 
         public JSCommand<TIn, TCallbackIn, TCallbackOut> Run(TIn input)
@@ -34,11 +45,16 @@ namespace Managers
             return this;
         }
 
-        public void AddCallbackAwaiter(CallbackAwaiterDelegate awaiter)
+        public async UniTask StartCallbackAwaiter(Func<string, bool> awaiter)
         {
             while (true)
             {
+                if (awaiter.Invoke(key))
+                {
+                    break;
+                }
                 
+                await UniTask.WaitForEndOfFrame();
             }
         }
     }

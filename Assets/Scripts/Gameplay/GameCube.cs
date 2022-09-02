@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Deblockle.Managers;
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using UnityEngine;
@@ -45,9 +46,18 @@ namespace Deblockle.Gameplay
             return actionsPack.GetAction(currentActionType);
         }
 
-        public void UpdateData(CubeDataPack cubeDataPack)
+        public async void UpdateData(CubeDataPack cubeDataPack)
         {
-            transform.position = cubeDataPack.Position;
+            // CubeRotator.SetPos((transform.position - cubeDataPack.Position).normalized * 1.1f);
+            //
+            // await DOTween.To(
+            //         () => CubeRotator.Progress, 
+            //         value => CubeRotator.Progress = value, 1, 1)
+            //     .SetEase(Ease.InOutSine)
+            //     .AsyncWaitForCompletion();
+            
+            transform.position = (cubeDataPack.Position - new Vector3(4, 0, 4)) * 1.1f;
+            transform.eulerAngles = Vector3.zero;
             currentActionType = cubeDataPack.UpSide;
 
             upSide.sprite       = actionsPack.GetIcon(cubeDataPack.UpSide);

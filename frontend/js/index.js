@@ -26,9 +26,39 @@ const requestSignIn = async () => {
     )
 }
 
+const setPlayerAccount = async() => {
+    try {
+    window.unityInst.SendMessage('JS Backend', 'SetPlayerAccount', walletConnection.getAccountId());
+    }
+    catch (e) {
+        console.log(e.message);
+    }
+}
 const isSignIn = async () => {
     const res = await walletConnection.isSignedIn()
     return res
+}
+const showDepositButton = async() =>{
+    window.unityInst.SendMessage('JS Backend', 'ShowDepositButton');
+}
+
+const showStreamButton = async() => {
+    window.unityInst.SendMessage('JS Backend', 'ShowStreamButton');
+}
+async function periodically(func, interval, ...args) {
+    try {
+      await func(...args);
+  
+    const timeout = setTimeout(
+      () => {
+        clearTimeout(timeout);
+        periodically(func, interval, ...args);
+      },
+      interval,
+    );
+    } catch (err) {
+      console.error('periodically error: ', err);
+    }
 }
 
 const connectToNear = async () => {
@@ -43,7 +73,7 @@ const connectToNear = async () => {
 
     blockleContract = new Contract(walletConnection.account(), blockleContractAddress, {
         viewMethods: ['status', 'get_game', 'first_player', 'streaming_id', 'second_player', 'game_state', 'cube_state', 'check_winner'],
-        changeMethods: ['start', 'pass_move', 'make_move', 'reset'],
+        changeMethods: ['start', 'pass_move', 'make_move', 'reset', 'connect_streaming_contract'],
         sender: walletConnection.getAccountId()
     })
 
@@ -58,10 +88,13 @@ const connectToNear = async () => {
 
 const getInfo = async () => {
     const players = await getPlayer();
+    
     if (players.first_player == null || players.second_player == null) {
         console.log("one of players is null");
+        const a = "ss";
+        window.unityInst.SendMessage('JS Backend', 'ReceiveInfo', a);
         return
-    }
+    };
     const gameInfo = await blockleContract.game_state();
     console.log(gameInfo);
     const infoObj = {};
@@ -81,14 +114,17 @@ const getInfo = async () => {
     infoObj.phase = gameInfo.phase;
     infoObj.activePlayer = gameInfo.active_player
     console.log(infoObj);
+    window.unityInst.SendMessage('JS Backend', 'ReceiveInfo', JSON.stringify(infoObj));
     return gameInfo;
 }
 
 const reset = async () => {
     await blockleContract.reset();
 }
+
 const getPlayer = async () => {
     const info = await blockleContract.status();
+    console.log(info);
     return info;
 }
 
@@ -97,10 +133,11 @@ const startGame = async () => {
         args: {},
         gas: "300000000000000"
     })
+    periodically(getInfo, 3000);
 }
 
 const makeMove = async (fromX, fromY, toX, toY) => {
-    const move = await blockleContract.make_move({ "from_x": fromX, "from_y": fromY, "to_x": toX, "to_y": toY });
+    const move = await blockleContract.make_move({ args:{"from_x": fromX, "from_y": fromY, "to_x": toX, "to_y": toY },gas: "300000000000000"});
     return move;
 }
 
@@ -108,6 +145,20 @@ const passMove = async () => {
     const pass = await blockleContract.passMove();
 }
 
+const registerStreamingContract = async() => {
+    await blockleContract.connect_streaming_contract({"streaming_id": streamingAddress});
+}
+
+const isEnoughWNearForGame = async() => {
+    const balance = await getWNearBalance();
+    console.log(utils.format.formatNearAmount(balance),pricePerGame);
+    console.log(utils.format.formatNearAmount(balance) >= utils.format.parseNearAmount(pricePerGame.toString()));
+    return utils.format.formatNearAmount(balance) >= pricePerGame;
+}
+const getWNearBalance = async () => {
+    const balance = await wrapContract.ft_balance_of({ 'account_id': walletConnection.account().accountId });
+    return balance;
+}
 const depositWNear = async () => {
     const isStorageAvailable = await wrapContract.storage_balance_of({ 'account_id': walletConnection.account().accountId });
     if (isStorageAvailable === null) {
@@ -118,7 +169,7 @@ const depositWNear = async () => {
             amount: "1250000000000000000000"
         });
     }
-    const balance = await wrapContract.ft_balance_of({ 'account_id': walletConnection.account().accountId });
+    const balance = await getWNearBalance();
     console.log(balance);
     console.log(utils.format.parseNearAmount(pricePerGame.toString()));
     console.log();

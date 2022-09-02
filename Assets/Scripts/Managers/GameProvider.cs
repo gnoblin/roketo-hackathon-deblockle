@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using FawesomeLab.GameCore.Manager;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace Managers
         [SerializeField] [ReadOnly] private GamePlayerEnum currentPlayer;
         [SerializeField] [ReadOnly] private GameStateEnum gameState;
         
-        public override void Init()
+        public override async void Init()
         {
             
         }
